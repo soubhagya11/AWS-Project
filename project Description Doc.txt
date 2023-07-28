@@ -1,0 +1,114 @@
+
+
+===============================
+
+Project-1 : 
+
+
+1. Launch an ec2 instance (Launch Amazon Linux 2) 
+2. Launch rds cluster 
+3. Configure ec2 instance to connect to rds
+
+
+yum install httpd -y
+service httpd start
+chkconfig httpd on
+
+
+Install mysql client
+
+== sudo yum install -y mysql
+
+Export mysql endpoint with below command.
+export MYSQL_HOST=<your-endpoint>
+
+export MYSQL_HOST=capstone.ca4onvkpp7qs.ap-south-1.rds.amazonaws.com
+
+--
+Connect to mysql to create a db user
+
+mysql -h capstone.ca4onvkpp7qs.ap-south-1.rds.amazonaws.com -P 3306 -u dbadmin -p
+
+--
+
+CREATE DATABASE webapp;
+
+CREATE TABLE webapp.customers (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL,
+    gender VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE USER 'webappuser' IDENTIFIED BY 'Password1234';
+GRANT ALL PRIVILEGES ON webapp.* TO webappuser;
+FLUSH PRIVILEGES;
+Exit
+
+--
+Install required dependencies:
+
+sudo amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+
+service httpd restart
+--
+--> Create an "EFS", Mount it to your ec2 instance, Mount it to /var/www/html/ path.
+--> Make it permanent mount*
+--
+cd /var/www/html/
+
+vim "info.php" and write below code/command to "info.php" file, save and close
+
+<?php phpinfo(); ?>
+
+Open browser and enter "INSTANCE-PUBLIC-IP/info.php", this should display all php config information.
+
+--
+
+
+Now create an "index.html" below shared file/ below code.
+
+Refer the shared "index.html" and copy content and paste it here. 
+
+
+----
+
+Also, create another file name "submit.php" and paste the below content.
+
+Refer the shared "index.html" and copy content and paste it here. 
+
+** Replace 'rds-hostname', 'username', 'password', 'database'.
+
+---------
+IF YOU HAVE A DOMAIN NAME**
+COnfigure "http to https redirection".
+Later, using Route53 map your domain Name.
+
+---------
+
+Now: Stop the Instance and Create a GOLDENAMI.
+--> Create an Application Load balancer, Run it in CustomVPC "Public SUbnet".
+
+--> Now using the GOLDENAMI and Application Load Balancer, Create an ASG.
+--> Your ec2 instances should run in "custom vpc" "app subnets".
+
+
+
+Now access http://<ELB-ENDPOINT>/ , Fill the required information and submit. Data should store in mysql mywebapp.customer database.
+
+
+--> To verify the Data storage:
+
+Connect to any ec2 instance,  connect to rds cluster and execute below sql query to view all information you submitted from the webpage you created.
+
+SELECT * from mywebapp.customers;
+
+Above command should show all the entries you entered so far.
+Also, Test ASG by terminating some instances.
+
+
+--> Create an Alarm when an ec2 instance terminated/stopped.
+
+
