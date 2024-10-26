@@ -1,4 +1,9 @@
 <?php
+// Enable error reporting
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // MySQL server configuration
 $servername = "capstone.ca4onvkpp7qs.ap-south-1.rds.amazonaws.com";
 $username = "webappuser";
@@ -14,19 +19,28 @@ if ($conn->connect_error) {
 }
 
 // Get the username entered by the user
-$userInput = $_POST['Name'];
+$userInput = isset($_POST['Name']) ? $_POST['Name'] : null;
 
-// Prepare the SQL statement to check username validity
-$stmt = $conn->prepare("SELECT * FROM webapp.customers WHERE Name = ?");
-$stmt->bind_param("s", $userInput);
-$stmt->execute();
-$result = $stmt->get_result();
+if ($userInput) {
+    // Prepare the SQL statement to check username validity
+    $stmt = $conn->prepare("SELECT * FROM customers WHERE Name = ?");
+    if ($stmt) {
+        $stmt->bind_param("s", $userInput);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-// Check if the username exists
-if ($result->num_rows > 0) {
-    include 'thankyou.html';
+        // Check if the username exists
+        if ($result->num_rows > 0) {
+            include 'thankyou.html';
+        } else {
+            echo "Username is invalid.";
+        }
+        $stmt->close();
+    } else {
+        echo "Error preparing statement: " . $conn->error;
+    }
 } else {
-    echo "Username is invalid.";
+    echo "Please provide a username.";
 }
 
 // Close the connection
